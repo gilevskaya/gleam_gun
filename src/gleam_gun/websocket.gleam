@@ -1,11 +1,13 @@
 import gleam/http.{Header}
 import gleam/dynamic.{Dynamic}
+import gleam/erlang/atom.{Atom}
 import gleam/result
 import gleam/string_builder.{StringBuilder}
 import gleam/bit_builder.{BitBuilder}
-import nerf/gun.{ConnectionPid, StreamReference}
+import gleam_gun/gun.{ConnectionPid, StreamReference}
 
 pub opaque type Connection {
+
   Connection(ref: StreamReference, pid: ConnectionPid)
 }
 
@@ -15,17 +17,28 @@ pub type Frame {
   Binary(BitString)
 }
 
+pub type ConnectionOptsTransportOpts {
+  Verify(Atom)
+}
+
+pub type ConnectionOpts {
+  Transport(Atom)
+  TransportOpts(List(ConnectionOptsTransportOpts))
+}
+
 pub fn connect(
   hostname: String,
   path: String,
-  on port: Int,
-  with headers: List(Header),
-) -> Result(Connection, ConnectError) {
-  use pid <- result.try(
-    gun.open(hostname, port)
+  port: Int,
+  headers: List(Header),
+  opts: List(ConnectionOpts),
+) {
+  use pid <- result.then(
+    gun.open(hostname, port, map_from_list(opts))
     |> result.map_error(ConnectionFailed),
   )
-  use _ <- result.try(
+
+  use _ <- result.then(
     gun.await_up(pid)
     |> result.map_error(ConnectionFailed),
   )
@@ -33,7 +46,7 @@ pub fn connect(
   // Upgrade to websockets
   let ref = gun.ws_upgrade(pid, path, headers)
   let conn = Connection(pid: pid, ref: ref)
-  use _ <- result.try(
+  use _ <- result.then(
     await_upgrade(conn, 1000)
     |> result.map_error(ConnectionFailed),
   )
@@ -62,10 +75,13 @@ pub fn send_binary_builder(to conn: Connection, this message: BitBuilder) -> Nil
 }
 
 pub external fn receive(from: Connection, within: Int) -> Result(Frame, Nil) =
-  "nerf_ffi" "ws_receive"
+  "ffi" "ws_receive"
 
 external fn await_upgrade(from: Connection, within: Int) -> Result(Nil, Dynamic) =
-  "nerf_ffi" "ws_await_upgrade"
+  "ffi" "ws_await_upgrade"
+
+external fn map_from_list(list: List(a)) -> m =
+  "maps" "from_list"
 
 // TODO: listen for close events
 pub fn close(conn: Connection) -> Nil {

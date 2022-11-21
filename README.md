@@ -1,8 +1,10 @@
-# nerf
+# Gleam Gun
 
 Gleam bindings to [gun][gun], the Erlang HTTP/1.1, HTTP/2 and Websocket client.
 
-[gun]: https://hex.pm/packages/gun
+Fork of [nerf](https://github.com/lpil/nerf) that adds connection options.
+
+[gun]: https://hex.pm/packages/gun 
 
 Currently this library is very basic and only supports a portion of the
 websocket API, and TLS is not verified! Hopefully in future a better websocket
@@ -13,19 +15,24 @@ client written in Gleam can replace this one.
 This package can be added to your Gleam project like so.
 
 ```sh
-gleam add nerf
+gleam add gleam_gun
 ```
 
 Then use it in your Gleam application.
 
 ```rust
-import nerf/websocket
+import gleam_gun/websocket
 import gleam/erlang
 import gleam/erlang/atom
 
 pub fn main() {
+  // Set connection options
+  let conn_opts = [
+    websocket.Transport(atom.create_from_string("tls")),
+    websocket.TransportOpts([websocket.Verify(atom.create_from_string("verify_none"))]),
+  ]
   // Connect
-  let assert Ok(conn) = websocket.connect("example.com", "/ws", 8080, [])
+  assert Ok(conn) = websocket.connect("example.com", "/ws", 8080, [], conn_opts)
 
   // Send some messages
   websocket.send(conn, "Hello")

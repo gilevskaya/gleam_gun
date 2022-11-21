@@ -1,8 +1,9 @@
 # Changelog
 
-## v0.4.0 - 2023-05-24
+## v0.4.1 - 2022-12-20
 
 - Updated for latest Gleam version.
+- Added support for the Connection Options.
 
 ## v0.3.1 - 2022-11-11
 

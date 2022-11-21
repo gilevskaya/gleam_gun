@@ -2,7 +2,7 @@ import gleam/string
 import gleam/string_builder
 import gleam/bit_builder
 import gleeunit
-import nerf/websocket.{Binary, Text}
+import gleam_gun/websocket.{Binary, Text}
 
 pub fn main() {
   gleeunit.main()
@@ -10,7 +10,7 @@ pub fn main() {
 
 pub fn echo_test() {
   // Connect
-  let assert Ok(conn) = websocket.connect("localhost", "/ws", 8080, [])
+  let assert Ok(conn) = websocket.connect("localhost", "/ws", 8080, [], [])
 
   // The server we're using sends a little hello message
   let assert Ok(Text(msg)) = websocket.receive(conn, 500)
@@ -50,9 +50,9 @@ pub fn echo_test() {
 pub fn echo_wss_test() {
   // Connect
   let assert Ok(conn1) =
-    websocket.connect("socketsbay.com", "/wss/v2/2/demo/", 443, [])
+    websocket.connect("socketsbay.com", "/wss/v2/2/demo/", 443, [], [])
   let assert Ok(conn2) =
-    websocket.connect("socketsbay.com", "/wss/v2/2/demo/", 443, [])
+    websocket.connect("socketsbay.com", "/wss/v2/2/demo/", 443, [], [])
 
   websocket.send(conn1, "Hello")
   websocket.send(conn2, "World")

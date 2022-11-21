@@ -11,11 +11,15 @@ pub external type StreamReference
 
 pub external type ConnectionPid
 
-pub fn open(host: String, port: Int) -> Result(ConnectionPid, Dynamic) {
-  open_erl(charlist.from_string(host), port)
+pub fn open(
+  host: String,
+  port: Int,
+  opts_map: Dynamic,
+) -> Result(ConnectionPid, Dynamic) {
+  open_erl(charlist.from_string(host), port, opts_map)
 }
 
-pub external fn open_erl(Charlist, Int) -> Result(ConnectionPid, Dynamic) =
+external fn open_erl(Charlist, Int, Dynamic) -> Result(ConnectionPid, Dynamic) =
   "gun" "open"
 
 pub external fn await_up(ConnectionPid) -> Result(Dynamic, Dynamic) =
@@ -39,7 +43,7 @@ pub type Frame {
 external type OkAtom
 
 external fn ws_send_erl(ConnectionPid, Frame) -> OkAtom =
-  "nerf_ffi" "ws_send_erl"
+  "ffi" "ws_send_erl"
 
 pub fn ws_send(pid: ConnectionPid, frame: Frame) -> Nil {
   ws_send_erl(pid, frame)

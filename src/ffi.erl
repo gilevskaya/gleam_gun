@@ -1,6 +1,6 @@
 -module(ffi).
 
--export([ws_receive/2, ws_await_upgrade/2, ws_send_erl/2]).
+-export([ws_receive/2, ws_await_upgrade/2, ws_send_erl/3]).
 
 ws_receive({connection, Ref, Pid}, Timeout) when
     is_reference(Ref) andalso is_pid(Pid)
@@ -20,7 +20,7 @@ ws_await_upgrade({connection, Ref, Pid}, Timeout) when
 ->
     receive
         {gun_upgrade, Pid, Ref, [<<"websocket">>], _} ->
-            {ok, nil};
+            {ok, Ref};
         {gun_response, Pid, _, _, Status, Headers} ->
             % TODO: return an error
             exit({ws_upgrade_failed, Status, Headers});
@@ -34,9 +34,9 @@ ws_await_upgrade({connection, Ref, Pid}, Timeout) when
         exit(timeout)
     end.
 
-ws_send_erl(Pid, {text_builder, Text}) ->
-    ws_send_erl(Pid, {text, Text});
-ws_send_erl(Pid, {binary_builder, Bin}) ->
-    ws_send_erl(Pid, {binary, Bin});
-ws_send_erl(Pid, Frame) ->
-    gun:ws_send(Pid, Frame).
+ws_send_erl(Pid, Ref, {text_builder, Text}) ->
+    ws_send_erl(Pid, Ref, {text, Text});
+ws_send_erl(Pid, Ref, {binary_builder, Bin}) ->
+    ws_send_erl(Pid, Ref, {binary, Bin});
+ws_send_erl(Pid, Ref, Frame) ->
+    gun:ws_send(Pid, Ref, Frame).

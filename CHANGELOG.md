@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.2 - 2022-12-20
+
+- Updated for latest Gleam version.
+
 ## v0.4.1 - 2022-12-20
 
 - Updated for latest Gleam version.

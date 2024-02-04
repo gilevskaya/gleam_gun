@@ -1,15 +1,15 @@
 //// Low level bindings to the gun API. You typically do not need to use this.
 //// Prefer the other modules in this library.
 
-import gleam/http.{Header}
-import gleam/erlang/charlist.{Charlist}
-import gleam/dynamic.{Dynamic}
-import gleam/string_builder.{StringBuilder}
-import gleam/bit_builder.{BitBuilder}
+import gleam/http.{type Header}
+import gleam/erlang/charlist.{type Charlist}
+import gleam/dynamic.{type Dynamic}
+import gleam/string_builder.{type StringBuilder}
+import gleam/bit_builder.{type BitBuilder}
 
-pub external type StreamReference
+pub type StreamReference
 
-pub external type ConnectionPid
+pub type ConnectionPid
 
 pub fn open(
   host: String,
@@ -19,33 +19,33 @@ pub fn open(
   open_erl(charlist.from_string(host), port, opts_map)
 }
 
-external fn open_erl(Charlist, Int, Dynamic) -> Result(ConnectionPid, Dynamic) =
-  "gun" "open"
+@external(erlang, "gun", "open")
+fn open_erl(c: Charlist, i: Int, d: Dynamic) -> Result(ConnectionPid, Dynamic)
 
-pub external fn await_up(ConnectionPid) -> Result(Dynamic, Dynamic) =
-  "gun" "await_up"
+@external(erlang, "gun", "await_up")
+pub fn await_up(pid: ConnectionPid) -> Result(Dynamic, Dynamic)
 
-pub external fn ws_upgrade(
-  ConnectionPid,
-  String,
-  List(Header),
-) -> StreamReference =
-  "gun" "ws_upgrade"
+@external(erlang, "gun", "ws_upgrade")
+pub fn ws_upgrade(
+  pid: ConnectionPid,
+  s: String,
+  l: List(Header),
+) -> StreamReference
 
 pub type Frame {
   Close
   Text(String)
-  Binary(BitString)
+  Binary(BitArray)
   TextBuilder(StringBuilder)
   BinaryBuilder(BitBuilder)
 }
 
-external type OkAtom
+type OkAtom
 
-external fn ws_send_erl(ConnectionPid, Frame) -> OkAtom =
-  "ffi" "ws_send_erl"
+@external(erlang, "ffi", "ws_send_erl")
+fn ws_send_erl(pid: ConnectionPid, ref: String, f: Frame) -> OkAtom
 
 pub fn ws_send(pid: ConnectionPid, frame: Frame) -> Nil {
-  ws_send_erl(pid, frame)
+  ws_send_erl(pid, "myRef", frame)
   Nil
 }

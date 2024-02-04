@@ -1,29 +1,42 @@
-import gleam/http.{Header}
-import gleam/dynamic.{Dynamic}
-import gleam/erlang/atom.{Atom}
+import gleam/http.{type Header}
+import gleam/dynamic.{type Dynamic}
+import gleam/erlang/atom.{type Atom}
 import gleam/result
-import gleam/string_builder.{StringBuilder}
-import gleam/bit_builder.{BitBuilder}
-import gleam_gun/gun.{ConnectionPid, StreamReference}
+import gleam/string_builder.{type StringBuilder}
+import gleam/bit_builder.{type BitBuilder}
+import gleam_gun/gun.{type ConnectionPid, type StreamReference}
+
+@external(erlang, "ffi", "ws_receive")
+pub fn receive(from: Connection, within: Int) -> Result(Frame, Nil)
+
+@external(erlang, "ffi", "ws_await_upgrade")
+fn await_upgrade(from: Connection, within: Int) -> Result(Nil, Dynamic)
+
+@external(erlang, "maps", "from_list")
+pub fn map_from_list(list: List(a)) -> m
+
+@external(erlang, "public_key", "cacerts_get")
+pub fn cacerts_get() -> Dynamic
 
 pub opaque type Connection {
-
   Connection(ref: StreamReference, pid: ConnectionPid)
 }
 
 pub type Frame {
   Close
   Text(String)
-  Binary(BitString)
+  Binary(BitArray)
 }
 
 pub type ConnectionOptsTransportOpts {
   Verify(Atom)
+  Cacerts(Dynamic)
 }
 
 pub type ConnectionOpts {
+  Trace(Bool)
   Transport(Atom)
-  TransportOpts(List(ConnectionOptsTransportOpts))
+  TransportOptions(List(ConnectionOptsTransportOpts))
 }
 
 pub fn connect(
@@ -48,7 +61,7 @@ pub fn connect(
   let conn = Connection(pid: pid, ref: ref)
   use _ <- result.then(
     await_upgrade(conn, 1000)
-    |> result.map_error(ConnectionFailed),
+    |> result.map_error(UpgradeFailed),
   )
 
   // TODO: handle upgrade failure
@@ -66,22 +79,13 @@ pub fn send_builder(to conn: Connection, this message: StringBuilder) -> Nil {
   gun.ws_send(conn.pid, gun.TextBuilder(message))
 }
 
-pub fn send_binary(to conn: Connection, this message: BitString) -> Nil {
+pub fn send_binary(to conn: Connection, this message: BitArray) -> Nil {
   gun.ws_send(conn.pid, gun.Binary(message))
 }
 
 pub fn send_binary_builder(to conn: Connection, this message: BitBuilder) -> Nil {
   gun.ws_send(conn.pid, gun.BinaryBuilder(message))
 }
-
-pub external fn receive(from: Connection, within: Int) -> Result(Frame, Nil) =
-  "ffi" "ws_receive"
-
-external fn await_upgrade(from: Connection, within: Int) -> Result(Nil, Dynamic) =
-  "ffi" "ws_await_upgrade"
-
-external fn map_from_list(list: List(a)) -> m =
-  "maps" "from_list"
 
 // TODO: listen for close events
 pub fn close(conn: Connection) -> Nil {
@@ -92,4 +96,5 @@ pub fn close(conn: Connection) -> Nil {
 pub type ConnectError {
   ConnectionRefused(status: Int, headers: List(Header))
   ConnectionFailed(reason: Dynamic)
+  UpgradeFailed(reason: Dynamic)
 }

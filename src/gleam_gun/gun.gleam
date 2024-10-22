@@ -5,7 +5,7 @@ import gleam/http.{type Header}
 import gleam/erlang/charlist.{type Charlist}
 import gleam/dynamic.{type Dynamic}
 import gleam/string_builder.{type StringBuilder}
-import gleam/bit_builder.{type BitBuilder}
+import gleam/bytes_builder.{type BytesBuilder}
 
 pub type StreamReference
 
@@ -37,7 +37,7 @@ pub type Frame {
   Text(String)
   Binary(BitArray)
   TextBuilder(StringBuilder)
-  BinaryBuilder(BitBuilder)
+  BinaryBuilder(BytesBuilder)
 }
 
 type OkAtom

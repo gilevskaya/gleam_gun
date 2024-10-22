@@ -21,18 +21,17 @@ gleam add gleam_gun
 Then use it in your Gleam application.
 
 ```rust
-import gleam_gun/websocket
-import gleam/erlang
 import gleam/erlang/atom
+import gleam_gun/websocket.{Text}
 
 pub fn main() {
   // Set connection options
   let conn_opts = [
     websocket.Transport(atom.create_from_string("tls")),
-    websocket.TransportOpts([websocket.Verify(atom.create_from_string("verify_none"))]),
+    websocket.TransportOptions([websocket.Verify(atom.create_from_string("verify_none"))]),
   ]
   // Connect
-  assert Ok(conn) = websocket.connect("example.com", "/ws", 8080, [], conn_opts)
+  let assert Ok(conn) = websocket.connect("example.com", "/ws", 8080, [], conn_opts)
 
   // Send some messages
   websocket.send(conn, "Hello")

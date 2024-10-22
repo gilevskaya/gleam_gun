@@ -3,7 +3,7 @@ import gleam/dynamic.{type Dynamic}
 import gleam/erlang/atom.{type Atom}
 import gleam/result
 import gleam/string_builder.{type StringBuilder}
-import gleam/bit_builder.{type BitBuilder}
+import gleam/bytes_builder.{type BytesBuilder}
 import gleam_gun/gun.{type ConnectionPid, type StreamReference}
 
 @external(erlang, "ffi", "ws_receive")
@@ -83,7 +83,7 @@ pub fn send_binary(to conn: Connection, this message: BitArray) -> Nil {
   gun.ws_send(conn.pid, gun.Binary(message))
 }
 
-pub fn send_binary_builder(to conn: Connection, this message: BitBuilder) -> Nil {
+pub fn send_binary_builder(to conn: Connection, this message: BytesBuilder) -> Nil {
   gun.ws_send(conn.pid, gun.BinaryBuilder(message))
 }
 
